@@ -1,0 +1,73 @@
+{
+  "info": {
+    "name": "Book Review Platform API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user1\",\n  \"email\": \"user1@example.com\",\n  \"password\": \"password\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/users/register", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["users", "register"] }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"password\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Get All Books",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/books", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["books"] }
+      }
+    },
+    {
+      "name": "Create Book (auth required)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer <JWT_TOKEN>" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Book Title\",\n  \"genre\": \"Fiction\",\n  \"description\": \"A great book\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/books", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["books"] }
+      }
+    },
+    {
+      "name": "Create Review (auth required)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer <JWT_TOKEN>" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Great book!\",\n  \"rating\": 5,\n  \"book\": {\"id\": 1}\n}"
+        },
+        "url": { "raw": "http://localhost:8080/reviews", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["reviews"] }
+      }
+    }
+  ]
+} 
