@@ -21,7 +21,7 @@ erDiagram
     Integer failedLoginAttempts
     LocalDateTime lastLoginAt
     LocalDateTime passwordChangedAt
-    Set<UserRole> roles
+    String roles
     String createdBy
     String lastModifiedBy
     LocalDateTime createdAt
@@ -39,10 +39,10 @@ erDiagram
     String language
     String publisher
     String coverImageUrl
-    BigDecimal price
+    Decimal price
     String currency
     String searchVector
-    BookStatus status
+    String status
     Double averageRating
     Integer reviewCount
     Long totalRatingSum

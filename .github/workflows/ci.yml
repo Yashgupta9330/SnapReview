@@ -33,6 +33,8 @@ jobs:
       - name: Wait for Postgres
         run: |
           until pg_isready -h localhost -p 5432; do sleep 1; done
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
       - name: Build with Maven
         run: ./mvnw clean verify
         env:
