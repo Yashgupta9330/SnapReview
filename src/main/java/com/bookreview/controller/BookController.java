@@ -16,8 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.security.Principal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/books")
@@ -34,7 +37,19 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookDTO> createBook(@Valid @RequestBody Book book) {
+    public ResponseEntity<BookDTO> createBook(@Valid @RequestBody Book book, Principal principal) {
+        // Set the author to the currently authenticated user
+        String username = principal.getName();
+        User author = userRepository.findByUsername(username).orElseThrow();
+        book.setAuthor(author);
+        // Replace genres with managed entities
+        Set<Genre> managedGenres = new HashSet<>();
+        for (Genre genre : book.getGenres()) {
+            Genre managedGenre = genreRepository.findById(genre.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Genre not found: " + genre.getId()));
+            managedGenres.add(managedGenre);
+        }
+        book.setGenres(managedGenres);
         BookDTO saved = bookService.saveBook(book);
         return ResponseEntity.ok(saved);
     }

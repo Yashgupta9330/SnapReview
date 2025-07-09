@@ -31,14 +31,14 @@ public class UserController {
         User saved = userRepository.save(user);
 
         // ⚠️ Return DTO, not entity
-        UserDTO response = new UserDTO(saved.getUsername(), saved.getEmail(), saved.getFirstName(), saved.getLastName());
+        UserDTO response = new UserDTO(saved.getId(), saved.getUsername(), saved.getEmail(), saved.getFirstName(), saved.getLastName());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/profile/{username}")
     public ResponseEntity<UserDTO> getProfile(@PathVariable String username) {
-        return userRepository.findByUsername(username)
-            .map(user -> ResponseEntity.ok(new UserDTO(user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName())))
-            .orElse(ResponseEntity.notFound().build());
+        User user = userRepository.findByUsername(username).orElseThrow();
+        UserDTO response = new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName());
+        return ResponseEntity.ok(response);
     }
 }

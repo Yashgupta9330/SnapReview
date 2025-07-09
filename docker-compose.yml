@@ -13,7 +13,9 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - db
     environment:
@@ -22,9 +24,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: your_db_password
     ports:
       - "8080:8080"
-    command: ["./mvnw", "spring-boot:run"]
-    volumes:
-      - .:/workspace
 
 volumes:
   pgdata: 

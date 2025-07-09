@@ -73,7 +73,7 @@ public class Book {
     @Column(length = 10)
     private String currency;
 
-    @Column(name = "search_vector", columnDefinition = "tsvector")
+    @Column(name = "search_vector", columnDefinition = "tsvector", insertable = false, updatable = false)
     private String searchVector;
 
     @Enumerated(EnumType.STRING)

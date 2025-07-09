@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/reviews")
@@ -47,7 +48,17 @@ public class ReviewController {
     }
 
     @PostMapping
-    public ResponseEntity<ReviewDTO> createReview(@Valid @RequestBody Review review) {
+    public ResponseEntity<ReviewDTO> createReview(@Valid @RequestBody Review review, Principal principal) {
+        // Set the user to the currently authenticated user
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        review.setUser(user);
+        // Ensure the book is managed
+        if (review.getBook() != null && review.getBook().getId() != null) {
+            Book managedBook = bookRepository.findById(review.getBook().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + review.getBook().getId()));
+            review.setBook(managedBook);
+        }
         return ResponseEntity.ok(reviewService.saveReview(review));
     }
 

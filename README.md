@@ -45,6 +45,12 @@ A peer-to-peer book review service built with Java 17, Spring Boot 3.x, Hibernat
 ## Continuous Integration
 - GitHub Actions workflow in `.github/workflows/ci.yml` runs tests on every push/PR.
 
+## API Testing with Postman
+
+You can test all API endpoints using the following Postman collection:
+
+[BookReview Postman Collection](https://orange-comet-916343.postman.co/workspace/Team-Workspace~da6e91e8-51a6-4712-82ab-71b6cc2ac04e/collection/27047894-90ddc9a5-4625-4be3-93fb-7ab9e0d42878?action=share&creator=27047894)
+
 ## ER Diagram
 See [docs/ERD.md](docs/ERD.md)
 
