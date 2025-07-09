@@ -2,116 +2,121 @@
 
 ```mermaid
 erDiagram
-  USER {
-    Long id PK
-    String username UNIQUE
-    String email UNIQUE
-    String password
-    String firstName
-    String lastName
-    String biography
-    LocalDate birthDate
-    String nationality
-    String website
-    String penName
-    String profileImageUrl
-    Boolean isActive
-    Boolean isVerified
-    Boolean isLocked
-    Integer failedLoginAttempts
-    LocalDateTime lastLoginAt
-    LocalDateTime passwordChangedAt
-    String roles
-    String createdBy
-    String lastModifiedBy
-    LocalDateTime createdAt
-    LocalDateTime updatedAt
-  }
-  BOOK {
-    Long id PK
-    String title
-    String subtitle
-    String isbn UNIQUE
-    String isbn13
-    String description
-    LocalDate publicationDate
-    Integer pageCount
-    String language
-    String publisher
-    String coverImageUrl
-    Decimal price
-    String currency
-    String searchVector
-    String status
-    Double averageRating
-    Integer reviewCount
-    Long totalRatingSum
-    Long viewCount
-    Boolean isActive
-    Boolean isFeatured
-    Boolean isBestseller
-    Boolean isFree
-    String createdBy
-    String lastModifiedBy
-    LocalDateTime createdAt
-    LocalDateTime updatedAt
-  }
-  GENRE {
-    Long id PK
-    String name UNIQUE
-    String slug UNIQUE
-    String description
-    Boolean isActive
-    LocalDateTime createdAt
-    LocalDateTime updatedAt
-  }
-  REVIEW {
-    Long id PK
-    String content
-    Integer rating
-    String title
-    Integer helpfulCount
-    Integer notHelpfulCount
-    Boolean isActive
-    Boolean isFeatured
-    LocalDateTime createdAt
-    LocalDateTime updatedAt
-  }
-  REVIEWHELPFULNESS {
-    Long id PK
-    Boolean isHelpful
-    LocalDateTime createdAt
-  }
-  REFRESHTOKEN {
-    Long id PK
-    String token UNIQUE
-    LocalDateTime expiryDate
-    Boolean isRevoked
-    LocalDateTime createdAt
-  }
-
-  USER ||--o{ BOOK : author
-  USER ||--o{ BOOK : coauthor
-  USER ||--o{ REVIEW : writes
-  USER ||--o{ REFRESHTOKEN : has
-  USER ||--o{ REVIEWHELPFULNESS : votes
-  BOOK ||--o{ REVIEW : has
-  BOOK ||--o{ GENRE : categorized_as
-  REVIEW ||--o{ REVIEWHELPFULNESS : has
-  GENRE ||--o{ BOOK : includes
-
-  %% Join tables (many-to-many)
-  BOOK ||--o{ BOOK_CO_AUTHORS : coauthor_link
-  BOOK_CO_AUTHORS {
-    Long book_id FK
-    Long author_id FK
-  }
-  BOOK ||--o{ BOOK_GENRES : genre_link
-  BOOK_GENRES {
-    Long book_id FK
-    Long genre_id FK
-  }
+    USER ||--o{ BOOK : writes
+    USER {
+        Long id PK
+        string username
+        string email
+        string password
+        string firstName
+        string lastName
+        string biography
+        LocalDate birthDate
+        string nationality
+        string website
+        string penName
+        string profileImageUrl
+        boolean isActive
+        boolean isVerified
+        boolean isLocked
+        int failedLoginAttempts
+        LocalDateTime lastLoginAt
+        LocalDateTime passwordChangedAt
+        string roles
+        string createdBy
+        string lastModifiedBy
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+    
+    BOOK ||--o{ REVIEW : has
+    BOOK {
+        Long id PK
+        string title
+        string subtitle
+        string isbn
+        string isbn13
+        string description
+        LocalDate publicationDate
+        int pageCount
+        string language
+        string publisher
+        string coverImageUrl
+        decimal price
+        string currency
+        string searchVector
+        string status
+        double averageRating
+        int reviewCount
+        Long totalRatingSum
+        Long viewCount
+        boolean isActive
+        boolean isFeatured
+        boolean isBestseller
+        boolean isFree
+        string createdBy
+        string lastModifiedBy
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+    
+    GENRE ||--o{ BOOK_GENRES : used_in
+    GENRE {
+        Long id PK
+        string name
+        string slug
+        string description
+        boolean isActive
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+    
+    REVIEW ||--o{ REVIEWHELPFULNESS : has
+    REVIEW {
+        Long id PK
+        string content
+        int rating
+        string title
+        int helpfulCount
+        int notHelpfulCount
+        boolean isActive
+        boolean isFeatured
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+    
+    REVIEWHELPFULNESS {
+        Long id PK
+        boolean isHelpful
+        LocalDateTime createdAt
+    }
+    
+    REFRESHTOKEN {
+        Long id PK
+        string token
+        LocalDateTime expiryDate
+        boolean isRevoked
+        LocalDateTime createdAt
+    }
+    
+    BOOK_CO_AUTHORS {
+        Long book_id FK
+        Long author_id FK
+    }
+    
+    BOOK_GENRES {
+        Long book_id FK
+        Long genre_id FK
+    }
+    
+    USER ||--o{ REVIEW : writes
+    USER ||--o{ REFRESHTOKEN : owns
+    USER ||--o{ REVIEWHELPFULNESS : votes
+    BOOK ||--o{ REVIEWHELPFULNESS : referenced_in
+    BOOK ||--o{ BOOK_GENRES : genre_link
+    BOOK ||--o{ BOOK_CO_AUTHORS : coauthored_by
 ```
+
 
 # ER Diagram Documentation (Entities & Relationships)
 
