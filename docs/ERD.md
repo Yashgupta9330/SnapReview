@@ -113,24 +113,6 @@ erDiagram
   }
 ```
 
-## Design Choices
-
-### Indexes & Constraints
-- PK = Primary Key, FK = Foreign Key, UNIQUE = Unique constraint
-- Unique constraints on username, email, book ISBN, genre name/slug, review (user+book)
-- Indexes for search and performance (e.g., search_vector, status, genre)
-
-### Fetch Strategies
-- LAZY for collections and most relationships
-- EAGER for roles (security)
-
-### Cascades
-- CascadeType.ALL for child collections (reviews, refresh tokens, helpfulness)
-- No cascade on user deletion to preserve review history
-
-### Audit Fields
-- All main entities have createdAt, updatedAt, and audit fields for tracking changes 
-
 # ER Diagram Documentation (Entities & Relationships)
 
 ## 1. User
