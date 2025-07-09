@@ -1,5 +1,6 @@
 package com.bookreview.entity;
 
+import com.bookreview.models.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

@@ -1,7 +1,7 @@
 package com.bookreview.repository;
 
 import com.bookreview.entity.User;
-import com.bookreview.entity.UserRole;
+import com.bookreview.models.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.Set;

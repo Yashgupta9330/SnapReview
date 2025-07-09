@@ -1,5 +1,6 @@
 package com.bookreview.controller;
 
+import com.bookreview.dto.ReviewDTO;
 import com.bookreview.entity.Review;
 import com.bookreview.entity.User;
 import com.bookreview.entity.Book;
@@ -9,50 +10,52 @@ import com.bookreview.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import java.util.Optional;
-import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
+
     private final ReviewService reviewService;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
 
     @GetMapping("/book/{bookId}")
-    public ResponseEntity<List<Review>> getReviewsByBook(@PathVariable Long bookId) {
-        Book book = bookRepository.findById(bookId).orElse(null);
-        if (book == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(reviewService.getReviewsByBook(book));
-    }
-
-    @PostMapping
-    public Review createReview(@RequestBody Review review) {
-        return reviewService.saveReview(review);
+    public ResponseEntity<List<ReviewDTO>> getReviewsByBook(@PathVariable Long bookId) {
+        return bookRepository.findById(bookId)
+                .map(book -> ResponseEntity.ok(reviewService.getReviewsByBook(book)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Review> getReview(@PathVariable Long id) {
-        Optional<Review> review = reviewService.getReview(id);
-        return review.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ReviewDTO> getReview(@PathVariable Long id) {
+        return reviewService.getReview(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getReviewsByUser(@PathVariable Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(reviewService.getReviewsByUser(user));
+    public ResponseEntity<List<ReviewDTO>> getReviewsByUser(@PathVariable Long userId) {
+        return userRepository.findById(userId)
+                .map(user -> ResponseEntity.ok(reviewService.getReviewsByUser(user)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<ReviewDTO> createReview(@Valid @RequestBody Review review) {
+        return ResponseEntity.ok(reviewService.saveReview(review));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Review> updateReview(@PathVariable Long id, @RequestBody Review review) {
-        try {
-            return ResponseEntity.ok(reviewService.updateReview(id, review));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ReviewDTO> updateReview(@PathVariable Long id, @Valid @RequestBody Review review) {
+        return reviewService.updateReview(id, review)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('MODERATOR')")

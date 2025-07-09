@@ -1,4 +1,4 @@
-package com.bookreview.entity;
+package com.bookreview.models;
 
 public enum UserRole {
     READER,

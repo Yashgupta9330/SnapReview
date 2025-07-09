@@ -2,7 +2,7 @@ package com.bookreview.controller;
 
 import com.bookreview.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,24 +17,22 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
-    private UserDetailsService userDetailsService;
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> loginData) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> loginData) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginData.get("username"), loginData.get("password")));
             UserDetails userDetails = userDetailsService.loadUserByUsername(loginData.get("username"));
             String token = jwtUtil.generateToken(userDetails.getUsername());
-            return Map.of("token", token);
+            return ResponseEntity.ok(Map.of("token", token));
         } catch (AuthenticationException e) {
-            throw new RuntimeException("Invalid credentials");
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
         }
     }
-} 
+}

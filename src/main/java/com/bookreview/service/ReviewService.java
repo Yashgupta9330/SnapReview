@@ -1,5 +1,6 @@
 package com.bookreview.service;
 
+import com.bookreview.dto.ReviewDTO;
 import com.bookreview.entity.Review;
 import com.bookreview.entity.User;
 import com.bookreview.entity.Book;
@@ -10,52 +11,67 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
     private final ReviewRepository reviewRepository;
 
-    public List<Review> getReviewsByBook(Book book) {
-        return reviewRepository.findByBook(book);
+    private ReviewDTO toDTO(Review review) {
+        return new ReviewDTO(
+            review.getId(),
+            review.getContent(),
+            review.getRating(),
+            review.getTitle(),
+            review.getCreatedAt(),
+            review.getUpdatedAt(),
+            review.getUser() != null ? review.getUser().getUsername() : null,
+            review.getBook() != null ? review.getBook().getId() : null
+        );
     }
 
-    public List<Review> getReviewsByUser(User user) {
-        return reviewRepository.findByUser(user);
+    public List<ReviewDTO> getReviewsByBook(Book book) {
+        return reviewRepository.findByBook(book).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public List<Review> getActiveReviews() {
-        return reviewRepository.findByIsActiveTrue();
+    public List<ReviewDTO> getReviewsByUser(User user) {
+        return reviewRepository.findByUser(user).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public Optional<Review> getReview(Long id) {
-        return reviewRepository.findById(id);
+    public List<ReviewDTO> getActiveReviews() {
+        return reviewRepository.findByIsActiveTrue().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public Optional<ReviewDTO> getReview(Long id) {
+        return reviewRepository.findById(id).map(this::toDTO);
     }
 
     @Transactional
-    public Review updateReview(Long id, Review updatedReview) {
+    public Optional<ReviewDTO> updateReview(Long id, Review updatedReview) {
         return reviewRepository.findById(id).map(review -> {
             review.setContent(updatedReview.getContent());
             review.setRating(updatedReview.getRating());
             review.setTitle(updatedReview.getTitle());
             review.setIsActive(updatedReview.getIsActive());
             review.setIsFeatured(updatedReview.getIsFeatured());
-            // ... update other fields as needed
-            review.setUpdatedAt(java.time.LocalDateTime.now());
-            return reviewRepository.save(review);
-        }).orElseThrow(() -> new RuntimeException("Review not found"));
+            return toDTO(reviewRepository.save(review));
+        });
     }
 
     public void deleteReview(Long id) {
+        if (!reviewRepository.existsById(id)) {
+            throw new IllegalArgumentException("Review not found with id " + id);
+        }
         reviewRepository.deleteById(id);
     }
 
     @Transactional
-    public Review saveReview(Review review) {
-        if (review.getId() == null) {
-            review.setCreatedAt(java.time.LocalDateTime.now());
+    public ReviewDTO saveReview(Review review) {
+        if (reviewRepository.existsByUserAndBook(review.getUser(), review.getBook())) {
+            throw new IllegalStateException("User has already reviewed this book");
         }
-        review.setUpdatedAt(java.time.LocalDateTime.now());
-        return reviewRepository.save(review);
+        return toDTO(reviewRepository.save(review));
     }
 }
