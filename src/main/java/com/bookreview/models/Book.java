@@ -81,7 +81,7 @@ public class Book {
     @Builder.Default
     private BookStatus status = BookStatus.PUBLISHED;
 
-    @Column(name = "average_rating", precision = 3, scale = 2)
+    @Column(name = "average_rating", precision = 3)
     private Double averageRating;
 
     @Column(name = "review_count")

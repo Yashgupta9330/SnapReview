@@ -1,4 +1,4 @@
-package com.example.BookReview;
+package com.bookreview;
 
 import com.bookreview.service.BookService;
 import com.bookreview.entity.Book;
@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collections;
 
-@SpringBootTest
+@SpringBootTest(classes = com.bookreview.BookReviewApplication.class)
 class BookReviewApplicationTests {
 
     @Autowired
