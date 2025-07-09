@@ -36,8 +36,4 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x ./mvnw
       - name: Build with Maven
-        run: ./mvnw clean verify
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/bookreview
-          SPRING_DATASOURCE_USERNAME: your_db_user
-          SPRING_DATASOURCE_PASSWORD: your_db_password 
+        run: ./mvnw clean verify 
