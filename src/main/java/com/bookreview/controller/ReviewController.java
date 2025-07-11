@@ -16,6 +16,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.security.Principal;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/reviews")
@@ -42,9 +45,9 @@ public class ReviewController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ReviewDTO>> getReviewsByUser(@PathVariable Long userId) {
-        return userRepository.findById(userId)
-                .map(user -> ResponseEntity.ok(reviewService.getReviewsByUser(user)))
-                .orElse(ResponseEntity.notFound().build());
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " does not exist"));
+        return ResponseEntity.ok(reviewService.getReviewsByUser(user));
     }
 
     @PostMapping
@@ -63,16 +66,20 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReviewDTO> updateReview(@PathVariable Long id, @Valid @RequestBody Review review) {
-        return reviewService.updateReview(id, review)
+    public ResponseEntity<ReviewDTO> updateReview(@PathVariable Long id, @Valid @RequestBody Review review, Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        return reviewService.updateReview(id, review, user)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('MODERATOR') or @reviewService.isReviewAuthor(#id, authentication.name)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> deleteReview(@PathVariable Long id) {
         reviewService.deleteReview(id);
-        return ResponseEntity.noContent().build();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "deleted successfully");
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,6 +1,7 @@
 package com.bookreview.service;
 
 import com.bookreview.entity.User;
+import com.bookreview.exception.UserAlreadyExistsException;
 import com.bookreview.models.UserRole;
 import com.bookreview.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class UserService {
     public User register(User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent() ||
             userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Username or Email already exists");
+            throw new UserAlreadyExistsException("Username or Email already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

@@ -26,8 +26,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(exclude = {"writtenBooks", "reviews", "refreshTokens"})
-@ToString(exclude = {"writtenBooks", "reviews", "refreshTokens"})
+@EqualsAndHashCode(exclude = {"writtenBooks", "reviews"})
+@ToString(exclude = {"writtenBooks", "reviews"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,12 +59,6 @@ public class User {
 
     @Column(length = 255)
     private String website;
-
-    @Column(name = "pen_name", length = 100)
-    private String penName;
-
-    @Column(name = "profile_image_url", length = 500)
-    private String profileImageUrl;
 
     @Column(name = "is_active")
     @Builder.Default
@@ -102,10 +96,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Review> reviews = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<RefreshToken> refreshTokens = new HashSet<>();
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)

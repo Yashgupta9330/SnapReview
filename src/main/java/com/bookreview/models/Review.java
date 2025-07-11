@@ -23,8 +23,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(exclude = {"user", "book", "helpfulnessVotes"})
-@ToString(exclude = {"user", "book", "helpfulnessVotes"})
+@EqualsAndHashCode(exclude = {"user", "book"})
+@ToString(exclude = {"user", "book"})
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,10 +62,6 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
-
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<ReviewHelpfulness> helpfulnessVotes = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

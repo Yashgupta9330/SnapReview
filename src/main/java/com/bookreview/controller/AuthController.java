@@ -1,5 +1,6 @@
 package com.bookreview.controller;
 
+import com.bookreview.exception.InvalidCredentialsException;
 import com.bookreview.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("token", token));
         } catch (AuthenticationException e) {
             logger.warn("Authentication failed for user: {}", username);
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
+            throw new InvalidCredentialsException("Invalid credentials");
         } catch (Exception e) {
             logger.error("Unexpected error during login for user: {}", username, e);
             return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));

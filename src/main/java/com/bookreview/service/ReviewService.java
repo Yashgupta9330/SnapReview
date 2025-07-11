@@ -5,9 +5,12 @@ import com.bookreview.entity.Review;
 import com.bookreview.entity.User;
 import com.bookreview.entity.Book;
 import com.bookreview.repository.ReviewRepository;
+import com.bookreview.repository.BookRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final BookRepository bookRepository;
 
     private ReviewDTO toDTO(Review review) {
         return new ReviewDTO(
@@ -49,13 +53,13 @@ public class ReviewService {
     }
 
     @Transactional
-    public Optional<ReviewDTO> updateReview(Long id, Review updatedReview) {
+    public Optional<ReviewDTO> updateReview(Long id, Review updatedReview, User currentUser) {
         return reviewRepository.findById(id).map(review -> {
+            if (!review.getUser().getId().equals(currentUser.getId())) {
+                throw new AccessDeniedException("You are not allowed to edit this review.");
+            }
             review.setContent(updatedReview.getContent());
             review.setRating(updatedReview.getRating());
-            review.setTitle(updatedReview.getTitle());
-            review.setIsActive(updatedReview.getIsActive());
-            review.setIsFeatured(updatedReview.getIsFeatured());
             return toDTO(reviewRepository.save(review));
         });
     }
@@ -73,5 +77,10 @@ public class ReviewService {
             throw new IllegalStateException("User has already reviewed this book");
         }
         return toDTO(reviewRepository.save(review));
+    }
+
+    public boolean isReviewAuthor(Long reviewId, String username) {
+        Optional<Review> reviewOpt = reviewRepository.findById(reviewId);
+        return reviewOpt.isPresent() && reviewOpt.get().getUser().getUsername().equals(username);
     }
 }

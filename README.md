@@ -51,6 +51,57 @@ You can test all API endpoints using the following Postman collection:
 
 [BookReview Postman Collection](https://orange-comet-916343.postman.co/workspace/Team-Workspace~da6e91e8-51a6-4712-82ab-71b6cc2ac04e/collection/27047894-90ddc9a5-4625-4be3-93fb-7ab9e0d42878?action=share&creator=27047894)
 
+
+
+- 1/∞: One/Many
+
+```
+┌─────────────────────┐         ┌─────────────────────┐
+│        USER         │         │        BOOK         │
+├─────────────────────┤         ├─────────────────────┤
+│ PK: id              │         │ PK: id              │
+│ UK: username        │    1    │ UK: isbn            │
+│ UK: email           │ ─────── │ FK: author_id       │
+│    password         │    ∞    │    title            │
+│    first_name       │         │    subtitle         │
+│    last_name        │         │    description      │
+│    roles[]          │         │    publication_date │
+│    is_active        │         │    average_rating   │
+│    created_at       │         │    review_count     │
+└─────────────────────┘         └─────────────────────┘
+         │                               │
+         │                               │
+         │ 1                             │ 1
+         │                               │
+         │                               │
+         ∞                               ∞
+┌─────────────────────┐         ┌─────────────────────┐
+│       REVIEW        │         │    BOOK_GENRES      │
+├─────────────────────┤         ├─────────────────────┤
+│ PK: id              │         │ FK: book_id         │
+│ FK: user_id         │         │ FK: genre_id        │
+│ FK: book_id         │         └─────────────────────┘
+│ UK: user_id+book_id │                   │
+│    content          │                   │
+│    rating           │                   ∞
+│    title            │         ┌─────────────────────┐
+│    helpful_count    │         │       GENRE         │
+│    created_at       │         ├─────────────────────┤
+└─────────────────────┘         │ PK: id              │
+                                │ UK: name            │
+                                │ UK: slug            │
+                                │    description      │
+                                │    is_active        │
+                                └─────────────────────┘
+
+┌─────────────────────┐
+│  BOOK_CO_AUTHORS    │
+├─────────────────────┤
+│ FK: book_id         │
+│ FK: author_id       │
+└─────────────────────┘
+```
+
 ## ER Diagram
 See [docs/ERD.md](docs/ERD.md)
 
