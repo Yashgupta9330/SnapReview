@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 public class FallbackController {
-    @RequestMapping("/**")
+    @RequestMapping("/api/**")
     public ResponseEntity<?> fallback() {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());

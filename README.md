@@ -52,7 +52,19 @@ You can test all API endpoints using the following Postman collection:
 [BookReview Postman Collection](https://orange-comet-916343.postman.co/workspace/Team-Workspace~da6e91e8-51a6-4712-82ab-71b6cc2ac04e/collection/27047894-90ddc9a5-4625-4be3-93fb-7ab9e0d42878?action=share&creator=27047894)
 
 
+## ER Diagram
+See [docs/ERD.md](docs/ERD.md)
 
+# Book Review Platform - Data Schema & Design Documentation
+
+## Entity Relationship Diagram
+
+**Legend:**
+- **PK**: Primary Key
+- **FK**: Foreign Key
+- **UK**: Unique Constraint
+- `[]`: Array/Set
+- 1/∞: One/Many
 - 1/∞: One/Many
 
 ```

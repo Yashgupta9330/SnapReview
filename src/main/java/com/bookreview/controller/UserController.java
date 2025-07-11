@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Optional;
 import com.bookreview.dto.UserDTO;
@@ -35,6 +36,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile/{username}")
     public ResponseEntity<UserDTO> getProfile(@PathVariable String username) {
         User user = userRepository.findByUsername(username).orElseThrow();
