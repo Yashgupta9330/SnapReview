@@ -23,9 +23,13 @@ public class GenreController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Genre> getGenre(@PathVariable Long id) {
+    public ResponseEntity<?> getGenre(@PathVariable Long id) {
         Optional<Genre> genre = genreRepository.findById(id);
-        return genre.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        if (genre.isPresent()) {
+            return ResponseEntity.ok(genre.get());
+        } else {
+            return ResponseEntity.status(404).body(java.util.Map.of("error", "Genre not found"));
+        }
     }
 
     @PostMapping
@@ -36,13 +40,17 @@ public class GenreController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<Genre> updateGenre(@PathVariable Long id, @RequestBody Genre updatedGenre) {
-        return genreRepository.findById(id).map(genre -> {
+    public ResponseEntity<?> updateGenre(@PathVariable Long id, @RequestBody Genre updatedGenre) {
+        Optional<Genre> genreOpt = genreRepository.findById(id);
+        if (genreOpt.isPresent()) {
+            Genre genre = genreOpt.get();
             genre.setName(updatedGenre.getName());
             genre.setSlug(updatedGenre.getSlug());
             genre.setDescription(updatedGenre.getDescription());
             return ResponseEntity.ok(genreRepository.save(genre));
-        }).orElse(ResponseEntity.notFound().build());
+        } else {
+            return ResponseEntity.status(404).body(java.util.Map.of("error", "Genre not found"));
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -37,10 +37,13 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReviewDTO> getReview(@PathVariable Long id) {
-        return reviewService.getReview(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getReview(@PathVariable Long id) {
+        Optional<ReviewDTO> reviewOpt = reviewService.getReview(id);
+        if (reviewOpt.isPresent()) {
+            return ResponseEntity.ok(reviewOpt.get());
+        } else {
+            return ResponseEntity.status(404).body(Map.of("error", "Review not found"));
+        }
     }
 
     @GetMapping("/user/{userId}")
@@ -66,20 +69,24 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReviewDTO> updateReview(@PathVariable Long id, @Valid @RequestBody Review review, Principal principal) {
+    public ResponseEntity<?> updateReview(@PathVariable Long id, @Valid @RequestBody Review review, Principal principal) {
         String username = principal.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
-        return reviewService.updateReview(id, review, user)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<ReviewDTO> updated = reviewService.updateReview(id, review, user);
+        if (updated.isPresent()) {
+            return ResponseEntity.ok(updated.get());
+        } else {
+            return ResponseEntity.status(404).body(Map.of("error", "Review not found"));
+        }
     }
 
     @PreAuthorize("hasRole('MODERATOR') or @reviewService.isReviewAuthor(#id, authentication.name)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteReview(@PathVariable Long id) {
+    public ResponseEntity<?> deleteReview(@PathVariable Long id) {
+        if (!reviewService.getReview(id).isPresent()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Review not found"));
+        }
         reviewService.deleteReview(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "deleted successfully");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("message", "deleted successfully"));
     }
 }
