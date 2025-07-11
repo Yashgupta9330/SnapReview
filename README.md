@@ -114,8 +114,5 @@ See [docs/ERD.md](docs/ERD.md)
 └─────────────────────┘
 ```
 
-## ER Diagram
-See [docs/ERD.md](docs/ERD.md)
-
 ## License
 MIT 
