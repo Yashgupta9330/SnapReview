@@ -200,6 +200,24 @@ public class BookService {
         return bookRepository.findAll(pageable).map(this::toDTO);
     }
 
+    public List<BookDTO> getBooksByGenreId(Long genreId) {
+        Genre genre = genreRepository.findById(genreId)
+            .orElseThrow(() -> new EntityNotFoundException("Genre not found: " + genreId));
+        return getBooksByGenre(genre);
+    }
+
+    public List<BookDTO> getBooksByAuthorId(Long authorId) {
+        User author = userRepository.findById(authorId)
+            .orElseThrow(() -> new EntityNotFoundException("Author not found: " + authorId));
+        return getBooksByAuthor(author);
+    }
+
+    public boolean canUserModifyBookById(Long bookId, User user) {
+        Book book = bookRepository.findById(bookId)
+            .orElseThrow(() -> new EntityNotFoundException("Book not found: " + bookId));
+        return canUserModifyBook(book, user);
+    }
+
     /**
      * Check if user can modify (update/delete) the book
      */
@@ -223,5 +241,11 @@ public class BookService {
                 .anyMatch(role -> "MODERATOR".equals(role) || "ADMIN".equals(role));
 
         return isAuthor || isCoAuthor || isModerator;
+    }
+
+    public User getCurrentUser(java.security.Principal principal) {
+        String username = principal.getName();
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("User not found: " + username));
     }
 }

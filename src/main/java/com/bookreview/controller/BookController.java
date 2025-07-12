@@ -34,9 +34,7 @@ import org.slf4j.LoggerFactory;
 public class BookController {
 
     private final BookService bookService;
-    private final UserRepository userRepository;
-    private final GenreRepository genreRepository;
-    private final BookRepository bookRepository;
+    // Removed UserRepository dependency
 
     private static final Logger logger = LoggerFactory.getLogger(BookController.class);
 
@@ -47,14 +45,14 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookDTO> createBook(@Valid @RequestBody BookCreateRequest request, Principal principal) {
+    public ResponseEntity<?> createBook(@Valid @RequestBody BookCreateRequest request, Principal principal) {
         try {
-            User author = getCurrentUser(principal);
+            User author = bookService.getCurrentUser(principal);
             BookDTO createdBook = bookService.createBook(request, author);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
         } catch (Exception e) {
             logger.error("Error creating book: {}", e.getMessage(), e);
-            throw e;
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -70,21 +68,25 @@ public class BookController {
     }
 
     @GetMapping("/genre/{genreId}")
-    public ResponseEntity<List<BookDTO>> getBooksByGenre(@PathVariable Long genreId) {
-        Genre genre = genreRepository.findById(genreId)
-            .orElseThrow(() -> new EntityNotFoundException("Genre not found: " + genreId));
-        
-        List<BookDTO> books = bookService.getBooksByGenre(genre);
-        return ResponseEntity.ok(books);
+    public ResponseEntity<?> getBooksByGenre(@PathVariable Long genreId) {
+        try {
+            List<BookDTO> books = bookService.getBooksByGenreId(genreId);
+            return ResponseEntity.ok(books);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/author/{authorId}")
-    public ResponseEntity<List<BookDTO>> getBooksByAuthor(@PathVariable Long authorId) {
-        User author = userRepository.findById(authorId)
-            .orElseThrow(() -> new EntityNotFoundException("Author not found: " + authorId));
-        
-        List<BookDTO> books = bookService.getBooksByAuthor(author);
-        return ResponseEntity.ok(books);
+    public ResponseEntity<?> getBooksByAuthor(@PathVariable Long authorId) {
+        try {
+            List<BookDTO> books = bookService.getBooksByAuthorId(authorId);
+            return ResponseEntity.ok(books);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/status/{status}")
@@ -96,21 +98,13 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBook(@PathVariable Long id, @Valid @RequestBody BookDTO bookDTO, Principal principal) {
         try {
-            // Check if book exists
-            Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book not found: " + id));
-            
-            // Check permissions
-            User currentUser = getCurrentUser(principal);
-            if (!bookService.canUserModifyBook(book, currentUser)) {
+            User currentUser = bookService.getCurrentUser(principal);
+            if (!bookService.canUserModifyBookById(id, currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "You are not authorized to update this book"));
             }
-
-            // Update book
             BookDTO updatedBook = bookService.updateBook(id, bookDTO)
                 .orElseThrow(() -> new EntityNotFoundException("Book not found after update: " + id));
-            
             return ResponseEntity.ok(updatedBook);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -125,18 +119,11 @@ public class BookController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBook(@PathVariable Long id, Principal principal) {
         try {
-            // Check if book exists
-            Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book not found: " + id));
-            
-            // Check permissions
-            User currentUser = getCurrentUser(principal);
-            if (!bookService.canUserModifyBook(book, currentUser)) {
+            User currentUser = bookService.getCurrentUser(principal);
+            if (!bookService.canUserModifyBookById(id, currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "You are not authorized to delete this book"));
             }
-
-            // Delete book
             bookService.deleteBook(id, currentUser);
             return ResponseEntity.ok(Map.of("message", "Book deleted successfully"));
         } catch (EntityNotFoundException e) {
@@ -153,7 +140,6 @@ public class BookController {
     public ResponseEntity<Page<BookDTO>> getBooksPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
         Pageable pageable = PageRequest.of(page, size);
         Page<BookDTO> books = bookService.getAllBooks(pageable);
         return ResponseEntity.ok(books);
@@ -166,15 +152,10 @@ public class BookController {
             @RequestParam(required = false) String genre,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
         Pageable pageable = PageRequest.of(page, size);
         Page<BookDTO> books = bookService.searchBooks(title, author, genre, pageable);
         return ResponseEntity.ok(books);
     }
 
-    private User getCurrentUser(Principal principal) {
-        String username = principal.getName();
-        return userRepository.findByUsername(username)
-            .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
-    }
+    // Removed getCurrentUser method from controller
 }

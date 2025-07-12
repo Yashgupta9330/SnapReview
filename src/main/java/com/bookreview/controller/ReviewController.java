@@ -19,6 +19,9 @@ import java.security.Principal;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Map;
 import java.util.HashMap;
+import com.bookreview.dto.ReviewCreateRequest;
+import com.bookreview.dto.ReviewUpdateRequest;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/reviews")
@@ -26,67 +29,78 @@ import java.util.HashMap;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final UserRepository userRepository;
-    private final BookRepository bookRepository;
 
     @GetMapping("/book/{bookId}")
-    public ResponseEntity<List<ReviewDTO>> getReviewsByBook(@PathVariable Long bookId) {
-        return bookRepository.findById(bookId)
-                .map(book -> ResponseEntity.ok(reviewService.getReviewsByBook(book)))
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getReviewsByBook(@PathVariable Long bookId) {
+        try {
+            List<ReviewDTO> reviews = reviewService.getReviewsByBookId(bookId);
+            return ResponseEntity.ok(reviews);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getReview(@PathVariable Long id) {
-        Optional<ReviewDTO> reviewOpt = reviewService.getReview(id);
-        if (reviewOpt.isPresent()) {
-            return ResponseEntity.ok(reviewOpt.get());
+        Optional<ReviewDTO> review = reviewService.getReview(id);
+        if (review.isPresent()) {
+            return ResponseEntity.ok(review.get());
         } else {
-            return ResponseEntity.status(404).body(Map.of("error", "Review not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Review not found"));
         }
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReviewDTO>> getReviewsByUser(@PathVariable Long userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " does not exist"));
-        return ResponseEntity.ok(reviewService.getReviewsByUser(user));
+    public ResponseEntity<?> getReviewsByUser(@PathVariable Long userId) {
+        try {
+            List<ReviewDTO> reviews = reviewService.getReviewsByUserId(userId);
+            return ResponseEntity.ok(reviews);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping
-    public ResponseEntity<ReviewDTO> createReview(@Valid @RequestBody Review review, Principal principal) {
-        // Set the user to the currently authenticated user
-        String username = principal.getName();
-        User user = userRepository.findByUsername(username).orElseThrow();
-        review.setUser(user);
-        // Ensure the book is managed
-        if (review.getBook() != null && review.getBook().getId() != null) {
-            Book managedBook = bookRepository.findById(review.getBook().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + review.getBook().getId()));
-            review.setBook(managedBook);
+    public ResponseEntity<?> createReview(@Valid @RequestBody ReviewCreateRequest request, Principal principal) {
+        try {
+            ReviewDTO created = reviewService.createReview(request, principal);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-        return ResponseEntity.ok(reviewService.saveReview(review));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateReview(@PathVariable Long id, @Valid @RequestBody Review review, Principal principal) {
-        String username = principal.getName();
-        User user = userRepository.findByUsername(username).orElseThrow();
-        Optional<ReviewDTO> updated = reviewService.updateReview(id, review, user);
-        if (updated.isPresent()) {
-            return ResponseEntity.ok(updated.get());
-        } else {
-            return ResponseEntity.status(404).body(Map.of("error", "Review not found"));
+    public ResponseEntity<?> updateReview(@PathVariable Long id,
+                                         @Valid @RequestBody ReviewUpdateRequest request,
+                                         Principal principal) {
+        try {
+            Optional<ReviewDTO> updated = reviewService.updateReview(id, request, principal);
+            if (updated.isPresent()) {
+                return ResponseEntity.ok(updated.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Review not found"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    @PreAuthorize("hasRole('MODERATOR') or @reviewService.isReviewAuthor(#id, authentication.name)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteReview(@PathVariable Long id) {
-        if (!reviewService.getReview(id).isPresent()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Review not found"));
+    public ResponseEntity<?> deleteReview(@PathVariable Long id, Principal principal) {
+        try {
+            boolean deleted = reviewService.deleteReview(id, principal);
+            if (deleted) {
+                return ResponseEntity.ok(Map.of("message", "deleted successfully"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Review not found"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-        reviewService.deleteReview(id);
-        return ResponseEntity.ok(Map.of("message", "deleted successfully"));
     }
 }

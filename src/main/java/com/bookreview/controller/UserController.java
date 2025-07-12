@@ -11,36 +11,34 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.Optional;
 import com.bookreview.dto.UserDTO;
 import com.bookreview.models.UserRole;
+import com.bookreview.dto.UserRegistrationRequest;
+import com.bookreview.service.UserService;
+import com.bookreview.exception.UserAlreadyExistsException;
+import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent() ||
-            userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username or Email already exists");
+    public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationRequest request) {
+        try {
+            UserDTO created = userService.registerUser(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
-
-        user.getRoles().add(UserRole.READER); // ✅ Correct role enum
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User saved = userRepository.save(user);
-
-        // ⚠️ Return DTO, not entity
-        UserDTO response = new UserDTO(saved.getId(), saved.getUsername(), saved.getEmail(), saved.getFirstName(), saved.getLastName());
-        return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile/{username}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDTO> getProfile(@PathVariable String username) {
-        User user = userRepository.findByUsername(username).orElseThrow();
-        UserDTO response = new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName());
-        return ResponseEntity.ok(response);
+        return userService.getUserProfile(username)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
